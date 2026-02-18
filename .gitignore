@@ -1,0 +1,20 @@
+# IDE
+.idea/
+*.iml
+
+# Build
+target/
+build/
+out/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Application
+application-local.properties
+application-local.yml
