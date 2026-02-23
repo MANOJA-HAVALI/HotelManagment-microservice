@@ -1,10 +1,6 @@
 package com.auth.service.controller;
 
-import com.auth.service.dto.AuthRequest;
-import com.auth.service.dto.AuthResponse;
-import com.auth.service.dto.RegisterRequest;
-import com.auth.service.dto.RegisterResponse;
-import com.auth.service.dto.TokenValidationResponse;
+import com.auth.service.dto.*;
 import com.auth.service.entities.AuthUser;
 import com.auth.service.security.JwtUtil;
 import com.auth.service.service.AuthService;
@@ -17,14 +13,10 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -48,23 +40,10 @@ public class AuthController {
         @ApiResponse(responseCode = "409", description = "User already exists")
     })
     public ResponseEntity<RegisterResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-        AuthUser registeredUser = authService.registerUser(registerRequest);
-        
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", registeredUser.getRole());
-        claims.put("userId", registeredUser.getUserId());
-        
-        String token = jwtUtil.generateToken(registeredUser.getEmail(), claims);
-        
-        RegisterResponse response = new RegisterResponse();
-        response.setName(registeredUser.getName());
-        response.setAbout(registeredUser.getAbout());
-        response.setEmail(registeredUser.getEmail());
-        response.setRole(registeredUser.getRole());
-        response.setUserId(registeredUser.getUserId());
-        
-        return ResponseEntity.ok(response);
+        RegisterResponse registerResponse = authService.registerUser(registerRequest);
+        return ResponseEntity.ok(registerResponse);
     }
+
 
     @PostMapping("/login")
     @Operation(summary = "Authenticate user", description = "Authenticates user credentials and returns JWT token")
@@ -73,31 +52,16 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "Invalid credentials"),
         @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
-    public ResponseEntity<AuthResponse> authenticateUser(
-            @Valid @RequestBody AuthRequest authRequest) {
+    public ResponseEntity<ApiSuccess<AuthResponse>> login (@Valid @RequestBody AuthRequest authRequest) {
+        AuthResponse authResponse = authService.loginUser(authRequest);
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        authRequest.getEmail(),
-                        authRequest.getPassword()
-                )
-        );
-
-        AuthUser user = (AuthUser) authentication.getPrincipal();
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", user.getRole());
-        claims.put("userId", user.getUserId());
-
-        String token = jwtUtil.generateToken(user.getUsername(), claims);
-
-        AuthResponse response = AuthResponse.builder()
-                .token(token)
-                .email(user.getUsername())
-                .role(user.getRole())
-                .userId(user.getUserId())
+        ApiSuccess response = ApiSuccess.builder()
+                .timestamp(java.time.Instant.now().toString())
+                .success(true)
+                .message("Login successful")
+                .data(authResponse)
                 .build();
-
+                
         return ResponseEntity.ok(response);
     }
 
@@ -109,30 +73,7 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Invalid token format")
     })
     public ResponseEntity<TokenValidationResponse> validateToken(@Parameter(description = "Bearer token", required = true) @RequestHeader("Authorization") String token) {
-        if (token != null && token.startsWith("Bearer ")) {
-            String jwtToken = token.substring(7);
-            try {
-                if (jwtUtil.validateToken(jwtToken)) {
-                    String email = jwtUtil.extractUsername(jwtToken);
-                    String role = jwtUtil.extractClaim(jwtToken, claims -> claims.get("role", String.class));
-                    String userId = jwtUtil.extractClaim(jwtToken, claims -> claims.get("userId", String.class));
-                    
-                    TokenValidationResponse response = TokenValidationResponse.builder()
-                            .valid(true)
-                            .email(email)
-                            .role(role)
-                            .userId(userId)
-                            .build();
-                    return ResponseEntity.ok(response);
-                }
-            } catch (Exception e) {
-                // Token is invalid
-            }
-        }
-        
-        TokenValidationResponse response = TokenValidationResponse.builder()
-                .valid(false)
-                .build();
+        TokenValidationResponse response = authService.validateToken(token);
         return ResponseEntity.ok(response);
     }
 
@@ -144,7 +85,6 @@ public class AuthController {
     })
     public ResponseEntity<AuthUser> getCurrentUser(Authentication authentication) {
         AuthUser user = (AuthUser) authentication.getPrincipal();
-        // Don't send password back
         user.setPassword(null);
         return ResponseEntity.ok(user);
     }

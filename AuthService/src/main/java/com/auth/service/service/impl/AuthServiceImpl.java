@@ -1,8 +1,6 @@
 package com.auth.service.service.impl;
 
-import com.auth.service.dto.AuthRequest;
-import com.auth.service.dto.AuthResponse;
-import com.auth.service.dto.RegisterRequest;
+import com.auth.service.dto.*;
 import com.auth.service.entities.AuthUser;
 import com.auth.service.entities.Hotel;
 import com.auth.service.entities.Rating;
@@ -43,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthUser registerUser(RegisterRequest registerRequest) {
+    public RegisterResponse  registerUser(RegisterRequest registerRequest) {
         // Check if user already exists
         if (authUserRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             throw new RuntimeException("User already exists with email: " + registerRequest.getEmail());
@@ -62,15 +60,19 @@ public class AuthServiceImpl implements AuthService {
         // Save AuthUser
         AuthUser savedAuthUser = authUserRepository.save(authUser);
 
-        return savedAuthUser;
+        // Map entity to response DTO
+        return RegisterResponse.builder()
+                .userId(savedAuthUser.getUserId())
+                .name(savedAuthUser.getName())
+                .email(savedAuthUser.getEmail())
+                .role(savedAuthUser.getRole())
+                .about(savedAuthUser.getAbout())
+                .build();
+
     }
 
     @Override
-    public AuthResponse LoginUser(AuthRequest authRequest) {
-        // Check if user already exists
-        if (authUserRepository.findByEmail(authRequest.getEmail()).isPresent()) {
-            throw new RuntimeException("User already exists with email: " + authRequest.getEmail());
-        }
+    public AuthResponse loginUser(AuthRequest authRequest) {
 
         AuthUser authUser = authUserRepository.findByEmail(authRequest.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + authRequest.getEmail()));
@@ -81,8 +83,10 @@ public class AuthServiceImpl implements AuthService {
         // 4. Return response
         return AuthResponse.builder()
                 .token(token)
+                .tokenType("Bearer")
                 .email(authUser.getEmail())
                 .role(authUser.getRole())
+                .userId(authUser.getUserId())
                 .build();
 
     }
@@ -118,6 +122,33 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public List<AuthUser> getAllUsers() {
         return authUserRepository.findAll();
+    }
+
+    @Override
+    public TokenValidationResponse validateToken(String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            String jwtToken = token.substring(7);
+            try {
+                if (jwtUtil.validateToken(jwtToken)) {
+                    String email = jwtUtil.extractUsername(jwtToken);
+                    String role = jwtUtil.extractClaim(jwtToken, claims -> claims.get("role", String.class));
+                    String userId = jwtUtil.extractClaim(jwtToken, claims -> claims.get("userId", String.class));
+
+                    return TokenValidationResponse.builder()
+                            .valid(true)
+                            .email(email)
+                            .role(role)
+                            .userId(userId)
+                            .build();
+                }
+            } catch (Exception e) {
+                // Token is invalid
+            }
+        }
+
+        return TokenValidationResponse.builder()
+                .valid(false)
+                .build();
     }
 
 }

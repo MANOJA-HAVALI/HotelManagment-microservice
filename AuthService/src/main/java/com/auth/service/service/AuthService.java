@@ -1,17 +1,15 @@
 package com.auth.service.service;
 
-import com.auth.service.dto.AuthRequest;
-import com.auth.service.dto.AuthResponse;
-import com.auth.service.dto.RegisterRequest;
-import com.auth.service.dto.RegisterResponse;
+import com.auth.service.dto.*;
 import com.auth.service.entities.AuthUser;
 
 import java.util.List;
 
 public interface AuthService {
 
-    AuthUser registerUser(RegisterRequest registerRequest);
+    RegisterResponse registerUser(RegisterRequest registerRequest);
     AuthUser getUser(String userId);
     List<AuthUser> getAllUsers();
-    AuthResponse LoginUser(AuthRequest authRequest);
+    AuthResponse loginUser(AuthRequest authRequest);
+    TokenValidationResponse validateToken(String token);
 }
