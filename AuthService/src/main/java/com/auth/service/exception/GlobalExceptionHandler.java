@@ -1,5 +1,7 @@
 package com.auth.service.exception;
 
+import com.auth.service.dto.ApiSuccess;
+import com.auth.service.util.CommonUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,6 +13,16 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ApiSuccess<Void>> handleRoleNotFoundException(RoleNotFoundException ex) {
+        return CommonUtils.buildErrorResponseEntity(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(RoleAlreadyExistsException.class)
+    public ResponseEntity<ApiSuccess<Void>> handleRoleAlreadyExistsException(RoleAlreadyExistsException ex) {
+        return CommonUtils.buildErrorResponseEntity(ex.getMessage(), HttpStatus.CONFLICT);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {

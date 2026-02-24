@@ -54,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
         authUser.setName(registerRequest.getName());
         authUser.setEmail(registerRequest.getEmail());
         authUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        authUser.setRole(registerRequest.getRole());
+        //authUser.setRole(registerRequest.getRole());
         authUser.setAbout(registerRequest.getAbout());
 
         // Save AuthUser
@@ -65,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
                 .userId(savedAuthUser.getUserId())
                 .name(savedAuthUser.getName())
                 .email(savedAuthUser.getEmail())
-                .role(savedAuthUser.getRole())
+                //.role(savedAuthUser.getRole())
                 .about(savedAuthUser.getAbout())
                 .build();
 
@@ -85,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
                 .token(token)
                 .tokenType("Bearer")
                 .email(authUser.getEmail())
-                .role(authUser.getRole())
+                //.role(authUser.getRole())
                 .userId(authUser.getUserId())
                 .build();
 

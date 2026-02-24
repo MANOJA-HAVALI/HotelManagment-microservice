@@ -52,15 +52,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - login and register only
                         .requestMatchers("/auth/login", "/auth/register").permitAll()
-                        .requestMatchers("/eureka/**").permitAll()
-                        // Health check endpoints
-                        .requestMatchers("/actuator/**").permitAll()
-                        // Swagger/OpenAPI endpoints
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/eureka/**","/actuator/**").permitAll()
 
                         // Admin-only endpoints
-                        .requestMatchers("/auth/users/**").hasRole("ADMIN")
-                        .requestMatchers("/auth/validate").hasRole("ADMIN")
+                        .requestMatchers("/api/roles/**","/api/modules/**","/auth/users/**","/auth/validate").hasRole("SUPER_ADMIN")
                         
                         // All other endpoints require authentication
                         .anyRequest().authenticated()

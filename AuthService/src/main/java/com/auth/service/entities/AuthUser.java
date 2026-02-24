@@ -3,6 +3,7 @@ package com.auth.service.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import java.util.List;
 public class AuthUser implements UserDetails {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "ID")
     private String userId;
 
@@ -29,10 +31,25 @@ public class AuthUser implements UserDetails {
     @Column(columnDefinition = "TEXT")
     private String about;
 
-    private String role = "ROLE_USER";
+    @Column
+    private Boolean isActive = true;
+
+    // Many users → One role
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @Transient  // we wre not storing ratings in user table so we marked it as transient
     private List<Rating> ratings = new ArrayList<>();
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (role != null && role.getRoleName() != null) {
+            return List.of(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
+        }
+        return List.of();
+    }
 
     @Override
     public String getUsername() {
@@ -56,12 +73,6 @@ public class AuthUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return isActive != null ? isActive : true;
     }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(() -> role);
-    }
-
 }
