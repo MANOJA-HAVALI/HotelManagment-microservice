@@ -1,13 +1,17 @@
 package com.auth.service.entities;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "role_module_permission")
 @Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RoleModulePermission {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

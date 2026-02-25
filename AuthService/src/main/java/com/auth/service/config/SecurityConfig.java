@@ -56,7 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/eureka/**","/actuator/**").permitAll()
 
                         // Admin-only endpoints
-                        .requestMatchers("/api/roles/**","/api/modules/**","/auth/users/**","/auth/validate").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/api/roles/**","/api/modules/**","/api/role-module-permissions/**","/auth/users/**","/auth/validate").hasRole("SUPER_ADMIN")
                         
                         // All other endpoints require authentication
                         .anyRequest().authenticated()

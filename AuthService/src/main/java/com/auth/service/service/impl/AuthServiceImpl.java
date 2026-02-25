@@ -11,11 +11,14 @@ import com.auth.service.repository.AuthUserRepository;
 import com.auth.service.security.JwtUtil;
 import com.auth.service.service.AuthService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -77,8 +80,14 @@ public class AuthServiceImpl implements AuthService {
         AuthUser authUser = authUserRepository.findByEmail(authRequest.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + authRequest.getEmail()));
 
-        // 3. Generate JWT
-        String token = jwtUtil.generateToken(authUser.getEmail());
+        // 3. Generate JWT with user authorities
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("authorities", authUser.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
+        claims.put("userId", authUser.getUserId());
+        
+        String token = jwtUtil.generateToken(authUser.getEmail(), claims);
 
         // 4. Return response
         return AuthResponse.builder()
