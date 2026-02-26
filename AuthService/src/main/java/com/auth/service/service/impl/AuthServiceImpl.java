@@ -4,12 +4,16 @@ import com.auth.service.dto.*;
 import com.auth.service.entities.AuthUser;
 import com.auth.service.entities.Hotel;
 import com.auth.service.entities.Rating;
-import com.auth.service.exception.ResourceNotFoundException;
+import com.auth.service.entities.Role;
+import com.auth.service.exception.UserAlreadyExistsException;
+import com.auth.service.exception.UserNotFoundException;
 import com.auth.service.extrenal.HotelServiceClient;
 import com.auth.service.extrenal.RatingServiceClient;
 import com.auth.service.repository.AuthUserRepository;
+import com.auth.service.repository.RoleRepository;
 import com.auth.service.security.JwtUtil;
 import com.auth.service.service.AuthService;
+import com.auth.service.util.ErrorInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,27 +31,28 @@ import java.util.stream.Collectors;
 public class AuthServiceImpl implements AuthService {
 
     private final AuthUserRepository authUserRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final HotelServiceClient hotelServiceClient;
     private final RatingServiceClient ratingServiceClient;
     private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
 
-    public AuthServiceImpl(AuthUserRepository authUserRepository, PasswordEncoder passwordEncoder, HotelServiceClient hotelService, RatingServiceClient ratingServiceClient, RestTemplate restTemplate, JwtUtil jwtUtil) {
+    public AuthServiceImpl(AuthUserRepository authUserRepository, PasswordEncoder passwordEncoder, HotelServiceClient hotelService, RatingServiceClient ratingServiceClient, RestTemplate restTemplate, JwtUtil jwtUtil, RoleRepository roleRepository) {
         this.authUserRepository = authUserRepository;
         this.passwordEncoder = passwordEncoder;
         this.hotelServiceClient = hotelService;
         this.ratingServiceClient = ratingServiceClient;
         this.restTemplate = restTemplate;
         this.jwtUtil = jwtUtil;
-
+        this.roleRepository = roleRepository;
     }
 
     @Override
     public RegisterResponse  registerUser(RegisterRequest registerRequest) {
         // Check if user already exists
         if (authUserRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-            throw new RuntimeException("User already exists with email: " + registerRequest.getEmail());
+            throw new UserAlreadyExistsException("User already exists with email: " + registerRequest.getEmail());
         }
 
         // Create AuthUser for authentication
@@ -57,7 +62,14 @@ public class AuthServiceImpl implements AuthService {
         authUser.setName(registerRequest.getName());
         authUser.setEmail(registerRequest.getEmail());
         authUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        //authUser.setRole(registerRequest.getRole());
+        
+        // Set role from roleId
+        if (registerRequest.getRoleId() != null) {
+            Role role = roleRepository.findById(registerRequest.getRoleId())
+                    .orElseThrow(() -> new RuntimeException("Role not found with id: " + registerRequest.getRoleId()));
+            authUser.setRole(role);
+        }
+        
         authUser.setAbout(registerRequest.getAbout());
 
         // Save AuthUser
@@ -68,7 +80,7 @@ public class AuthServiceImpl implements AuthService {
                 .userId(savedAuthUser.getUserId())
                 .name(savedAuthUser.getName())
                 .email(savedAuthUser.getEmail())
-                //.role(savedAuthUser.getRole())
+                .role(savedAuthUser.getRole() != null ? savedAuthUser.getRole().getRoleName() : null)
                 .about(savedAuthUser.getAbout())
                 .build();
 
@@ -78,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse loginUser(AuthRequest authRequest) {
 
         AuthUser authUser = authUserRepository.findByEmail(authRequest.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + authRequest.getEmail()));
+                .orElseThrow(() -> new UserNotFoundException(ErrorInfo.USER_NOT_FOUND.getCode(),ErrorInfo.USER_NOT_FOUND.getMessage() + authRequest.getEmail()));
 
         // 3. Generate JWT with user authorities
         Map<String, Object> claims = new HashMap<>();
@@ -86,6 +98,10 @@ public class AuthServiceImpl implements AuthService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
         claims.put("userId", authUser.getUserId());
+        claims.put("role", authUser.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("ROLE_USER"));
         
         String token = jwtUtil.generateToken(authUser.getEmail(), claims);
 
@@ -94,7 +110,7 @@ public class AuthServiceImpl implements AuthService {
                 .token(token)
                 .tokenType("Bearer")
                 .email(authUser.getEmail())
-                //.role(authUser.getRole())
+                .role(authUser.getRole() != null ? authUser.getRole().getRoleName() : null)
                 .userId(authUser.getUserId())
                 .build();
 
@@ -103,7 +119,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthUser getUser(String userId) {
         AuthUser AuthUser = authUserRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(ErrorInfo.USER_NOT_FOUND.getCode(),ErrorInfo.USER_NOT_FOUND.getMessage() + userId));
         //http://localhost:8082/api/ratings/users/b0066374-e7d1-4d52-9988-a76f428bae28
         try {
             List<Rating> ratingForUser = ratingServiceClient.getRatingsByUserId(AuthUser.getUserId());
@@ -159,5 +175,16 @@ public class AuthServiceImpl implements AuthService {
                 .valid(false)
                 .build();
     }
+
+    @Override
+    public String deleteUser(String id) {
+        if (!authUserRepository.existsById(id)) {
+            throw new UserNotFoundException(ErrorInfo.USER_NOT_FOUND.getCode(),ErrorInfo.USER_NOT_FOUND.getMessage() +" "+ id);
+
+        }
+        authUserRepository.deleteById(id);
+        return "User deleted successfully";
+    }
+
 
 }

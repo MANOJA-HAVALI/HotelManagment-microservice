@@ -12,4 +12,5 @@ public interface AuthService {
     List<AuthUser> getAllUsers();
     AuthResponse loginUser(AuthRequest authRequest);
     TokenValidationResponse validateToken(String token);
+    public String deleteUser(String id);
 }

@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 public class CommonUtils {
 
@@ -18,7 +19,7 @@ public class CommonUtils {
 
     public static <T> ApiSuccess<T> buildSuccessResponse(T data, String message) {
         return ApiSuccess.<T>builder()
-                .timestamp(Instant.now().toString())
+                .timestamp(LocalDateTime.now())
                 .success(true)
                 .message(message)
                 .data(data)
@@ -27,7 +28,7 @@ public class CommonUtils {
 
     public static <T> ApiSuccess<T> buildSuccessResponse(T data, String message, HttpStatus status) {
         return ApiSuccess.<T>builder()
-                .timestamp(Instant.now().toString())
+                .timestamp(LocalDateTime.parse(Instant.now().toString()))
                 .success(true)
                 .message(message)
                 .data(data)
@@ -36,7 +37,7 @@ public class CommonUtils {
 
     public static <T> ApiSuccess<T> buildErrorResponse(String message) {
         return ApiSuccess.<T>builder()
-                .timestamp(Instant.now().toString())
+                .timestamp(LocalDateTime.parse(Instant.now().toString()))
                 .success(false)
                 .message(message)
                 .data(null)

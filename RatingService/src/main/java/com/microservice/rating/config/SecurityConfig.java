@@ -31,7 +31,7 @@ public class SecurityConfig {
                         // Health check and documentation endpoints
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/eureka/**","/actuator/**").permitAll()
                         // Protected endpoints - require authentication for all other rating operations
-                        .requestMatchers("/ratings/**").hasRole("ADMIN")
+                        .requestMatchers("/ratings/**").hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(authServiceTokenFilter, UsernamePasswordAuthenticationFilter.class);

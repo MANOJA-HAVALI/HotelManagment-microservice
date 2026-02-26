@@ -19,21 +19,8 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Rating Service API")
                         .description("Rating Service API Documentation")
-                        .version("v1.0.0")
-                        .contact(new Contact()
-                                .name("Hotel Management Team")
-                                .email("support@hotelmanagement.com")
-                                .url("https://hotelmanagement.com"))
-                        .license(new License()
-                                .name("Apache 2.0")
-                                .url("https://www.apache.org/licenses/LICENSE-2.0")))
-                .servers(List.of(
-                        new Server()
-                                .url("http://localhost:8084")
-                                .description("Development Server"),
-                        new Server()
-                                .url("https://rating.hotelmanagement.com")
-                                .description("Production Server")
+                        .version("1.0"))
+                .servers(List.of(new Server().url("http://localhost:8082")
                 ));
     }
 }

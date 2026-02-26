@@ -1,5 +1,6 @@
 package com.auth.service.exception;
 
+
 import com.auth.service.dto.ApiSuccess;
 import com.auth.service.util.CommonUtils;
 import org.springframework.http.HttpStatus;
@@ -51,11 +52,12 @@ public class  GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
     
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleResourceNotFoundException(ResourceNotFoundException ex) {
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleResourceNotFoundException(UserNotFoundException ex) {
         Map<String, Object> response = new HashMap<>();
         response.put("status", HttpStatus.NOT_FOUND.value());
         response.put("error", "Resource Not Found");
+        response.put("errorCode", ex.getErrorCode());
         response.put("message", ex.getMessage());
         response.put("timestamp", System.currentTimeMillis());
         

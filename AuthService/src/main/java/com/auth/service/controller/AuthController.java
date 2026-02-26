@@ -37,6 +37,12 @@ public class AuthController {
     })
     public ResponseEntity<RegisterResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         RegisterResponse registerResponse = authService.registerUser(registerRequest);
+        ApiSuccess response = ApiSuccess.builder()
+                .timestamp(java.time.LocalDateTime.now())
+                .success(true)
+                .message("Register successful")
+                .data(registerResponse)
+                .build();
         return ResponseEntity.ok(registerResponse);
     }
 
@@ -52,7 +58,7 @@ public class AuthController {
         AuthResponse authResponse = authService.loginUser(authRequest);
 
         ApiSuccess response = ApiSuccess.builder()
-                .timestamp(java.time.Instant.now().toString())
+                .timestamp(java.time.LocalDateTime.now())
                 .success(true)
                 .message("Login successful")
                 .data(authResponse)
@@ -105,5 +111,16 @@ public class AuthController {
     public ResponseEntity<List<AuthUser>> getAllUsers() {
         List<AuthUser> users = authService.getAllUsers();
         return ResponseEntity.ok(users);
+    }
+
+    @Operation(summary = "Delete user", description = "Deletes a user by their ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<String> deleteUser(@PathVariable String userId) {
+        String result = authService.deleteUser(userId);
+        return ResponseEntity.ok(result);
     }
 }

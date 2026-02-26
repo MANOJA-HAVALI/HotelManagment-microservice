@@ -45,10 +45,11 @@ public class AuthUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (role != null && role.getRoleName() != null) {
-            return List.of(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
-        }
-        return List.of();
+//        if (role != null && role.getRoleName() != null) {
+//            return List.of(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
+//        }
+//        return List.of();
+        return List.of(new SimpleGrantedAuthority("ROLE_"+role.getRoleName()));
     }
 
     @Override

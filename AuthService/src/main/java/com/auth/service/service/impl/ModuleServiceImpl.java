@@ -8,6 +8,7 @@ import com.auth.service.exception.ModuleAlreadyExistsException;
 import com.auth.service.exception.ModuleNotFoundException;
 import com.auth.service.repository.ModuleRepository;
 import com.auth.service.service.ModuleService;
+import com.auth.service.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,7 @@ public class ModuleServiceImpl implements ModuleService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true) // This method will only READ data, not UPDATE/INSERT/DELETE
     public List<ModuleDto> getAllModules() {
         List<Module> modules = moduleRepository.findAll();
         return modules.stream()

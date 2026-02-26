@@ -2,7 +2,6 @@ package com.hotel.service.HotelService.controller;
 
 import com.hotel.service.HotelService.entites.Hotel;
 import com.hotel.service.HotelService.service.HotelService;
-import com.hotel.service.HotelService.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,12 +31,6 @@ public class HotelController {
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Hotel> createHotel(@RequestBody Hotel hotel) {
-        // Check if user has required roles (ADMIN or MANAGER)
-        SecurityUtils.checkAnyRole("ROLE_ADMIN", "ROLE_MANAGER");
-        
-        String currentUser = SecurityUtils.getCurrentUserEmail();
-        System.out.println("Creating hotel for user: " + currentUser);
-        
         String hotelId = UUID.randomUUID().toString();
         hotel.setId(hotelId);
         return ResponseEntity.status(HttpStatus.CREATED).body(hotelService.create(hotel));

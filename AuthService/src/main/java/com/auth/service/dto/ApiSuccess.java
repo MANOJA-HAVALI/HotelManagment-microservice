@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 public class ApiSuccess<T> {
     
-    private String timestamp;
+    private LocalDateTime timestamp;
     private boolean success;
     private String message;
     private T data;

@@ -30,14 +30,14 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - Read-only access for all users
-                        .requestMatchers("/hotels/GetAll").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/hotels/GetAll").hasAnyRole("USER","SUPER_ADMIN")
                         .requestMatchers("/hotels/Get/**").permitAll()
                         .requestMatchers("/eureka/**","/actuator/**","/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                         // Admin-only endpoints - Hotel management operations
-                        .requestMatchers("/hotels/Create").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/hotels/Update/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/hotels/Delete/**").hasRole("ADMIN")
+                        .requestMatchers("/hotels/Create").hasAnyRole("SUPER_ADMIN", "MANAGER")
+                        .requestMatchers("/hotels/Update/**").hasAnyRole("SUPER_ADMIN", "MANAGER")
+                        .requestMatchers("/hotels/Delete/**").hasRole("SUPER_ADMIN")
                         
                         // All other endpoints require authentication
                         .anyRequest().authenticated()

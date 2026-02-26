@@ -3,6 +3,7 @@ package com.auth.service.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -10,24 +11,27 @@ import lombok.Data;
 @Schema(description = "User registration request")
 public class RegisterRequest {
 
-    @NotBlank(message = "Name is required")
-    @Size(min = 2, max = 50, message = "Name should be between 2 and 50 characters")
-    @Schema(description = "User's full name", example = "John Doe", required = true)
-    private String name;
-
     @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
-    @Schema(description = "User's email address", example = "john.doe@example.com", required = true)
+    @Email(message = "Invalid email format")
+    @Size(max = 100, message = "Email must not exceed 100 characters")
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password should be at least 6 characters")
-    @Schema(description = "User's password", example = "password123", required = true)
+    @Size(min = 8, max = 20, message = "Password must be 8–20 characters")
     private String password;
 
-    @Schema(description = "User's role", example = "ROLE_USER", allowableValues = {"ROLE_USER", "ROLE_ADMIN"})
-    private String role = "ROLE_USER";
-    
-    @Schema(description = "User's bio/description", example = "Software developer passionate about microservices")
+    @NotBlank(message = "Name is required")
+    @Size(min = 2, max = 50, message = "Name must be 2–50 characters")
+    private String name;
+
+    @Size(max = 500, message = "About must not exceed 500 characters")
     private String about;
+
+    @NotNull(message = "isActive flag is required")
+    private Boolean isActive;
+
+    @NotBlank(message = "RoleId is required")
+    private String roleId;
+
 }
+

@@ -65,7 +65,7 @@ public class RoleModulePermissionServiceImpl implements RoleModulePermissionServ
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true) //Only SELECT queries allowed
     public List<RoleModulePermissionDto> getAllPermissions() {
         List<RoleModulePermission> permissions = permissionRepository.findAll();
         return permissions.stream()
