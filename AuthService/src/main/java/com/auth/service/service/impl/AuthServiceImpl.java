@@ -62,12 +62,24 @@ public class AuthServiceImpl implements AuthService {
         authUser.setName(registerRequest.getName());
         authUser.setEmail(registerRequest.getEmail());
         authUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        authUser.setIsActive(registerRequest.getIsActive() != null ? registerRequest.getIsActive() : true);
         
-        // Set role from roleId
-        if (registerRequest.getRoleId() != null) {
+        // Set role from roleId, or default to USER role
+        if (registerRequest.getRoleId() != null && !registerRequest.getRoleId().trim().isEmpty()) {
             Role role = roleRepository.findById(registerRequest.getRoleId())
                     .orElseThrow(() -> new RuntimeException("Role not found with id: " + registerRequest.getRoleId()));
             authUser.setRole(role);
+        } else {
+            Role defaultRole = roleRepository.findByRoleName("USER")
+                    .orElseGet(() -> {
+                        Role newRole = Role.builder()
+                                .roleName("USER")
+                                .description("Regular User")
+                                .isActive(true)
+                                .build();
+                        return roleRepository.save(newRole);
+                    });
+            authUser.setRole(defaultRole);
         }
         
         authUser.setAbout(registerRequest.getAbout());

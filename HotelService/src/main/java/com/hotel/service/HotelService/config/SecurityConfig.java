@@ -12,6 +12,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import jakarta.servlet.DispatcherType;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,10 +30,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         // Public endpoints - Read-only access for all users
-                        .requestMatchers("/hotels/GetAll").hasAnyRole("USER","SUPER_ADMIN")
+                        .requestMatchers("/hotels/GetAll").permitAll()
                         .requestMatchers("/hotels/Get/**").permitAll()
-                        .requestMatchers("/eureka/**","/actuator/**","/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/eureka/**","/actuator/**","/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll()
 
                         // Admin-only endpoints - Hotel management operations
                         .requestMatchers("/hotels/Create").hasAnyRole("SUPER_ADMIN", "MANAGER")

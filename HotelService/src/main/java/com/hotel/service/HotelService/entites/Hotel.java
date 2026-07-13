@@ -1,6 +1,7 @@
 package com.hotel.service.HotelService.entites;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -24,4 +25,8 @@ public class Hotel {
     
     @Schema(description = "Hotel description", example = "Luxury hotel with premium amenities and excellent service")
     private String about;
+
+    @Column(nullable = false)
+    @Schema(description = "Soft delete flag. When true, the hotel is considered deleted and hidden from GET APIs.")
+    private boolean deleted = false;
 }

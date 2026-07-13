@@ -68,13 +68,13 @@ public class HotelController {
     }
 
     @DeleteMapping("/Delete/{id}")
-    @Operation(summary = "Delete hotel", description = "Deletes a hotel by its ID")
+    @Operation(summary = "Delete hotel (soft)", description = "Soft deletes a hotel by its ID. The hotel is hidden from GET APIs.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Hotel deleted successfully"),
+        @ApiResponse(responseCode = "200", description = "Hotel soft-deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Hotel not found")
     })
     public ResponseEntity<String> deleteHotel(@Parameter(description = "Hotel ID", required = true) @PathVariable String id) {
         hotelService.delete(id);
-        return ResponseEntity.ok("Hotel deleted successfully");
+        return ResponseEntity.ok("Hotel soft-deleted successfully");
     }
 }

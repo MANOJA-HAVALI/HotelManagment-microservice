@@ -22,18 +22,19 @@ public class HotelServiceImp implements HotelService {
 
     @Override
     public List<Hotel> getAll() {
-        return hotelRepository.findAll();
+        // Soft-deleted hotels must not be exposed through GET APIs
+        return hotelRepository.findByDeletedFalse();
     }
 
     @Override
     public Hotel get(String id) {
-        return hotelRepository.findById(id)
+        return hotelRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
     }
 
     @Override
     public Hotel update(Hotel hotel) {
-        Hotel existingHotel = hotelRepository.findById(hotel.getId())
+        Hotel existingHotel = hotelRepository.findByIdAndDeletedFalse(hotel.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + hotel.getId()));
         existingHotel.setName(hotel.getName());
         existingHotel.setLocation(hotel.getLocation());
@@ -43,8 +44,10 @@ public class HotelServiceImp implements HotelService {
 
     @Override
     public void delete(String id) {
-        Hotel hotel = hotelRepository.findById(id)
+        Hotel hotel = hotelRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
-        hotelRepository.delete(hotel);
+
+        hotel.setDeleted(true);
+        hotelRepository.save(hotel);
     }
 }

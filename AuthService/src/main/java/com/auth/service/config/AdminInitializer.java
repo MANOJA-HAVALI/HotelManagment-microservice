@@ -5,12 +5,14 @@ import com.auth.service.entities.Role;
 import com.auth.service.repository.AuthUserRepository;
 import com.auth.service.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class AdminInitializer implements CommandLineRunner {
 
     private final AuthUserRepository authUserRepository;
@@ -44,10 +46,10 @@ public class AdminInitializer implements CommandLineRunner {
             admin.setRole(superAdminRole);
 
             authUserRepository.save(admin);
-            System.out.println("Super admin user created successfully");
+            log.info("Super admin user created successfully");
 
         } else {
-            System.out.println("Admin user already exists");
+            log.info("Admin user already exists");
         }
 
     }

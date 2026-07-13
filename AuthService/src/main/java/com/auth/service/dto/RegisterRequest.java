@@ -27,10 +27,8 @@ public class RegisterRequest {
     @Size(max = 500, message = "About must not exceed 500 characters")
     private String about;
 
-    @NotNull(message = "isActive flag is required")
     private Boolean isActive;
 
-    @NotBlank(message = "RoleId is required")
     private String roleId;
 
 }

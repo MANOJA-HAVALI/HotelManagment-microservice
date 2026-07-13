@@ -45,6 +45,9 @@ public class AuthServiceTokenFilter extends OncePerRequestFilter {
                     if (role == null) {
                         role = "ROLE_USER"; // Default role if not provided
                     }
+                    if (!role.startsWith("ROLE_")) {
+                        role = "ROLE_" + role;
+                    }
                     
                     List<SimpleGrantedAuthority> authorities = List.of(
                         new SimpleGrantedAuthority(role)

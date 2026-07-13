@@ -16,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
+import jakarta.servlet.DispatcherType;
 
 @Configuration
 @EnableWebSecurity
@@ -26,6 +28,9 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Autowired
+    private CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -48,15 +53,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints - login and register only
-                        .requestMatchers("/auth/login", "/auth/register").permitAll()
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        // Public endpoints - login, register, and validate only
+                        .requestMatchers("/auth/login", "/auth/register", "/auth/validate").permitAll()
 
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/eureka/**","/actuator/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/eureka/**","/actuator/**", "/error").permitAll()
 
                         // Admin-only endpoints
-                        .requestMatchers("/api/roles/**","/api/modules/**","/api/role-module-permissions/**","/auth/users/**","/auth/validate").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/api/roles/**","/api/modules/**","/api/role-module-permissions/**","/auth/users/**").hasRole("SUPER_ADMIN")
                         
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
